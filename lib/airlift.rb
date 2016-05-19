@@ -19,19 +19,25 @@ module Airlift
   autoload :File, 'airlift/file'
   autoload :VERSION, 'airlift/version'
 
-  def connect(**options)
-    # Convert all options to string keys.
-    options = options.inject({}) {|memo, (key, value)| memo[key.to_s] = value; memo }
+  def connect(**config, &block)
+    # Convert all config to string keys.
+    config = config.inject({}) {|memo, (key, value)| memo[key.to_s] = value; memo }
     # Figure out which plugin to load. If no explicit name is given but a
     # hostname is, use SSH, otherwise use local.
-    plugin = options['name'] || (options['hostname'] ? 'ssh' : 'local')
+    plugin = config['name'] || (config['hostname'] ? 'ssh' : 'local')
     # Based on Test Kitchen's plugin loader, require the file and load the class.
     first_load = require("airlift/connection/#{plugin}")
     str_const = plugin.split("_").map { |i| i.capitalize }.join
     klass = Airlift::Connection.const_get(str_const)
-    object = klass.new(options)
-    object.verify_dependencies if first_load
-    object
+    connection = klass.new(**config)
+    connection.verify_dependencies if first_load
+    if block
+      rv = block.call(connection)
+      connection.close
+      rv
+    else
+      connection
+    end
   rescue LoadError, NameError
     raise ClientError,
       "Could not load the '#{plugin}' plugin from the load path." \
