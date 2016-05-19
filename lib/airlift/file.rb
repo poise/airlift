@@ -95,8 +95,9 @@ module Airlift
     # @param local_path [String] Path to download to.
     # @return [Boolean]
     def download(local_path)
-      local_file = ::File.open(local_path, 'wb')
-      @connection.download_file(@path) {|data| local_file.write(data) }
+      ::File.open(local_path, 'wb') do |local_file|
+        @connection.download_file(@path) {|data| local_file.write(data) }
+      end
     end
 
     # Upload from a local file. Returns true if the file was uploaded and false
@@ -106,9 +107,10 @@ module Airlift
     # @return [Boolean]
     def upload(local_path)
       @connection.upload_file(@path) do |send|
-        local_file = ::File.open(local_path, 'rb')
-        while data = local_file.read(1024)
-          send.call(data)
+        ::File.open(local_path, 'rb') do |local_file|
+          while data = local_file.read(1024)
+            send.call(data)
+          end
         end
       end
     end
