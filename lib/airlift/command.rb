@@ -28,6 +28,7 @@ module Airlift
     end
 
     attr_accessor :sudo
+    attr_accessor :sudo_password
     attr_accessor :pty
 
     # The base class only defines status as an attr_reader, we need to write to

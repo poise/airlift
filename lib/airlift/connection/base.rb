@@ -137,6 +137,14 @@ module Airlift
         raise NotImplementedError
       end
 
+      # Create a temporary file or directory and return a File object for it.
+      #
+      # @param directory [Boolean] Create a temporary directory instead of a file.
+      # @return [Airlift::File]
+      def tempfile(directory: false)
+        raise NotImplementedError
+      end
+
       # Tear down any resources that need it to clean up the connection.
       #
       # @abstract

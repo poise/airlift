@@ -20,6 +20,9 @@ module Airlift
     class AirliftError < Exception
     end
 
+    class LoadError < AirliftError
+    end
+
     class FileError < AirliftError
     end
 

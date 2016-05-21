@@ -206,7 +206,7 @@ module Airlift
       private
 
       def ssh_connection
-        @ssh_connection ||= Net::SSH.start(@host, config[:user], config)
+        @ssh_connection ||= Net::SSH.start(@host, config[:user], config[:ssh_options] || {})
       end
 
       def sftp_connection
