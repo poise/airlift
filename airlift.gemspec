@@ -33,6 +33,8 @@ Gem::Specification.new do |spec|
   spec.test_files = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = %w{lib}
 
+  spec.add_dependency 'mixlib-shellout'
+  spec.add_dependency 'net-sftp'
   spec.add_dependency 'net-ssh'
   spec.add_dependency 'winrm-fs'
 end

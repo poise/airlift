@@ -25,8 +25,8 @@ module Airlift
     # are optional and system-dependent. See individual accessors for more
     # information about each value.
     def initialize(path, ftype, atime: nil, birthtime: nil, blksize: nil, blocks: nil, ctime: nil, dev: nil,
-                   dev_major: nil, dev_minor: nil, gid: nil, ino: nil, mode: nil, mtime: nil, nlink: nil, rdev: nil,
-                   rdev_major: nil, rdev_minor: nil, size: nil, uid: nil)
+                   dev_major: nil, dev_minor: nil, gid: nil, group: nil, ino: nil, mode: nil, mtime: nil, nlink: nil,
+                   rdev: nil, rdev_major: nil, rdev_minor: nil, size: nil, uid: nil, user: nil)
       @path = path
       @ftype = ftype
       @atime = atime
@@ -38,6 +38,7 @@ module Airlift
       @dev_major = dev_major
       @dev_minor = dev_minor
       @gid = gid
+      @group = group
       @ino = ino
       @mode = mode
       @mtime = mtime
@@ -47,6 +48,7 @@ module Airlift
       @rdev_minor = rdev_minor
       @size = size
       @uid = uid
+      @user = user
     end
 
     attr_reader :path
@@ -60,6 +62,7 @@ module Airlift
     attr_reader :dev_major
     attr_reader :dev_minor
     attr_reader :gid
+    attr_reader :group
     attr_reader :ino
     attr_reader :mode
     attr_reader :mtime
@@ -69,6 +72,7 @@ module Airlift
     attr_reader :rdev_minor
     attr_reader :size
     attr_reader :uid
+    attr_reader :user # username
 
     # Compare two stat objects my comparing modification times.
     #

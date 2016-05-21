@@ -19,12 +19,15 @@ module Airlift
   autoload :File, 'airlift/file'
   autoload :VERSION, 'airlift/version'
 
-  def connect(**config, &block)
-    # Convert all config to string keys.
-    config = config.inject({}) {|memo, (key, value)| memo[key.to_s] = value; memo }
+  def self.connect(**config, &block)
+    # Convert all config to symbol keys.
+    config = config.inject({}) {|memo, (key, value)| memo[key.to_sym] = value; memo }
+    # Some common fixups for all plugins because they happen a lot.
+    config[:user] = config.delete(:username) if config.include?(:username)
+    config[:host] = config.delete(:hostname) if config.include?(:hostname)
     # Figure out which plugin to load. If no explicit name is given but a
     # hostname is, use SSH, otherwise use local.
-    plugin = config['name'] || (config['hostname'] ? 'ssh' : 'local')
+    plugin = config[:name] || (config[:host] ? 'ssh' : 'local')
     # Based on Test Kitchen's plugin loader, require the file and load the class.
     first_load = require("airlift/connection/#{plugin}")
     str_const = plugin.split("_").map { |i| i.capitalize }.join
@@ -38,10 +41,10 @@ module Airlift
     else
       connection
     end
-  rescue LoadError, NameError
-    raise ClientError,
-      "Could not load the '#{plugin}' plugin from the load path." \
-        " Please ensure that your plugin is installed as a gem or" \
-        " included in your Gemfile if using Bundler."
+  # rescue LoadError, NameError
+  #   raise Errors::LoadError,
+  #     "Could not load the '#{plugin}' plugin from the load path." \
+  #       " Please ensure that your plugin is installed as a gem or" \
+  #       " included in your Gemfile if using Bundler."
   end
 end

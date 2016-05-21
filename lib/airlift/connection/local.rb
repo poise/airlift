@@ -14,6 +14,10 @@
 # limitations under the License.
 #
 
+require 'etc'
+
+require 'mixlib/shellout'
+
 require 'airlift/connection/base'
 
 
@@ -23,6 +27,21 @@ module Airlift
     #
     # @since 1.0.0
     class Local < Base
+      # (see Base#execute_command)
+      def execute_command(cmd)
+        # Yo dawg, I heard you like commands in your commands.
+        local_cmd = Mixlib::ShellOut.new(cmd.command,
+          cwd: cmd.cwd, timeout: cmd.timeout, returns: cmd.valid_exit_codes,
+          live_stdout: cmd.live_stdout, live_stderr: cmd.live_stderr,
+          input: cmd.input, logger: cmd.logger, log_level: cmd.log_level,
+          log_tag: cmd.log_tag, environment: cmd.environment,
+        )
+        local_cmd.run_command
+        cmd.stdout << local_cmd.stdout
+        cmd.stderr << local_cmd.stderr
+        cmd.status = local_cmd.status
+      end
+
       # (see Base#download_file)
       def download_file(path, &block)
         return false unless ::File.readable?(path)
@@ -49,15 +68,23 @@ module Airlift
           ::File.stat(path)
         else
           ::File.lstat(path)
+        end.tap do |stat|
+          # Define our two extension methods.
+          group = stat.gid && Etc.getgrgid(stat.gid).name
+          user = stat.uid && Etc.getpwuid(stat.uid).name
+          stat.define_singleton_method(:group) { group }
+          stat.define_singleton_method(:user) { user }
         end
       rescue SystemCallError
         nil
       end
 
+      # (see Base#sync)
       def sync(local_path, remote_path)
         raise 'boom'
       end
 
+      # (see Base#delete)
       def delete(path)
         ::File.unlink(path)
         true

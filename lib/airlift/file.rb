@@ -86,7 +86,7 @@ module Airlift
     # @return [File::Stat, Airlift::Stat, nil]
     def stat
       return @stat if defined?(@stat)
-      @stat = @connection.stat_file(@path, follow_symlink: @follow_symlink)
+      @stat = @connection.stat(@path, follow_symlink: @follow_symlink)
     end
 
     # Download to a local path. Returns true if the file was downloaded and

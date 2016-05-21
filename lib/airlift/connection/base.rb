@@ -142,6 +142,7 @@ module Airlift
       # @abstract
       # @return [void]
       def close
+        # Implemented by subclasses if needed.
       end
 
     end
