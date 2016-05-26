@@ -80,7 +80,7 @@ module Airlift
         # This uses cat> so that it can be sudo-d to directly write to root-owned
         # files without an upload + sudo mv. It could use tee but then it would
         # echo back all the data which would be a waste of bandwidth.
-        ssh_sudo_exec!('bash', '-s', "cat > #{Shellwords.escape(path)}") do |ch, action, data|
+        ssh_sudo_exec!('bash', '-s', "cat > #{path}") do |ch, action, data|
           case action
           when :exec
             writer_proc = Proc.new do |writer_data|
