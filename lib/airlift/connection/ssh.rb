@@ -77,11 +77,30 @@ module Airlift
 
       # (see Base#upload_file)
       def upload_file(path, &block)
-        raise 'boom'
+        # This uses cat> so that it can be sudo-d to directly write to root-owned
+        # files without an upload + sudo mv. It could use tee but then it would
+        # echo back all the data which would be a waste of bandwidth.
+        ssh_sudo_exec!('bash', '-s', "cat > #{Shellwords.escape(path)}") do |ch, action, data|
+          case action
+          when :exec
+            writer_proc = Proc.new do |writer_data|
+              ch.send_data(writer_data)
+              # TODO Do something here to pump the event loop so we don't
+              # buffer everything forever. Alternatively check if send_data has
+              # a sync version (or is always sync)?
+            end
+            block.call(writer_proc)
+          when :exitstatus
+            return false if data != 0
+          end
+        end
+        true
       end
 
       # (see Base#stat)
       def stat(path, follow_symlink:)
+        # TODO use existing Train stat parser code here.
+        # depends on porting over the OS detection code.
         raise 'boom'
       end
 
