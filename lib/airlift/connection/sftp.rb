@@ -14,14 +14,9 @@
 # limitations under the License.
 #
 
-require 'shellwords'
-
-require 'net/ssh'
 require 'net/sftp'
 
-require 'airlift/command_status'
 require 'airlift/connection/ssh'
-require 'airlift/errors'
 require 'airlift/stat'
 
 
