@@ -126,7 +126,7 @@ module Airlift
       def close
         # Shut down SSH.
         if @ssh_connection
-          @ssh_connection.shutdown
+          @ssh_connection.close
           @ssh_connection = nil
         end
         super
