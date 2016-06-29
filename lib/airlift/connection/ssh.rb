@@ -80,7 +80,9 @@ module Airlift
         # This uses cat> so that it can be sudo-d to directly write to root-owned
         # files without an upload + sudo mv. It could use tee but then it would
         # echo back all the data which would be a waste of bandwidth.
-        ssh_sudo_exec!('bash', '-s', "cat > #{path}") do |ch, action, data|
+        # As with the sh in {#execute_command}, this could cause issues with paths
+        # that contain literally $s or 's. Don't do that, seriously.
+        ssh_sudo_exec!('sh', '-s', "cat > '#{path}'") do |ch, action, data|
           case action
           when :exec
             writer_proc = Proc.new do |writer_data|
@@ -132,11 +134,35 @@ module Airlift
 
       private
 
+      # Create and memoize an SSH connection.
+      #
+      # @return [Net::SSH::Session]
       def ssh_connection
         @ssh_connection ||= Net::SSH.start(@host, config[:user], config[:ssh_options] || {})
       end
 
-      def ssh_exec(*cmd, input: nil, pty: true, &block)
+      # More flexible version of `Net::SSH::Session#exec`. The provided block
+      # with be called at various points throughout the channel lifecycle.
+      # The values passed to the block will be the SSH channel object, a symbol
+      # indicating the type of callback, and an optional data value.
+      #
+      # Callback action types:
+      # * `:connect` – After initial connection setup.
+      # * `:pty` – After a PTY is allocated, if requested.
+      # * `:exec` – After the command is successfully started.
+      # * `:stdout` – Process stdout data is available. The data argument will
+      #   be a string buffer.
+      # * `:stderr` – Process stderr data is available. The data argument will
+      #   be a string buffer.
+      # * `:exitstatus` – Command has finished. The data argument will be the
+      #   numeric exit code.
+      #
+      # @param cmd [Array<String>, Array<Array<String>>] Command string or array
+      #   to execute.
+      # @param pty [Boolean] Request a PTY or not.
+      # @param block [Proc] Callback block for channel events.
+      # @return [Net::SSH::Channel]
+      def ssh_exec(*cmd, pty: true, &block)
         cmd = cmd.first if cmd.length == 1
         # Convert array to a string.
         cmd = Shellwords.join(cmd) if cmd.is_a?(Array)
@@ -189,12 +215,24 @@ module Airlift
         end
       end
 
+      # Like {#ssh_exec} but waits for the channel to finish execution.
+      #
+      # @see #ssh_exec
+      # @return [Net::SSH::Channel]
       def ssh_exec!(*args, &block)
         ssh_exec(*args, &block).tap {|ch| ch.wait }
       end
 
+      # Extends {#ssh_exec} to automatically run the command under sudo if
+      # requested.
       def ssh_sudo_exec(*cmd, input: nil, pty: true, sudo: config[:sudo], &block)
-        return ssh_exec(*cmd, input, pty, &block) unless sudo
+        # Not actually using sudo features.
+        unless sudo
+          return ssh_exec(*cmd, pty: pty) do |ch, action, data|
+            ch.send_data(input) if action == :exec
+            block.call(ch, action, data)
+          end
+        end
 
         # Set up the sudo stuffs.
         sudo_password_buf = nil
@@ -227,6 +265,10 @@ module Airlift
         end
       end
 
+      # Like {#ssh_sudo_exec} but waits for the channel to finish execution.
+      #
+      # @see #ssh_sudo_exec
+      # @return [Net::SSH::Channel]
       def ssh_sudo_exec!(*args, &block)
         ssh_sudo_exec(*args, &block).tap {|ch| ch.wait }
       end
