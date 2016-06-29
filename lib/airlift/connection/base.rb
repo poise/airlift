@@ -25,10 +25,13 @@ module Airlift
     # @since 1.0.0
     class Base
       def initialize(**config)
+        @logger = config.delete(:logger)
         @config = config
       end
 
       attr_reader :config
+
+      attr_reader :logger
 
       # @!group Primary API
       # ===================
@@ -38,6 +41,8 @@ module Airlift
       # @see Airlift::Command#initialize
       # @return [Airlift::Command]
       def command(*cmd, **options)
+        # Copy over the logger.
+        options[:logger] = logger
         # Copy over the sudo setting from the connection if needed.
         options[:sudo] = config[:sudo] if config.include?(:sudo) && !options.include?(:sudo)
         Airlift::Command.new(self, *cmd, **options)

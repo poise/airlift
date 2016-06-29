@@ -199,6 +199,8 @@ module Airlift
               block.call(ch, :exitstatus, data.read_long)
             end
 
+            # Run the requested command.
+            logger.debug("[Airlift::Connection::SSH] Running command: #{cmd}")
             ch.exec cmd do |_, exec_success|
               raise Errors::CommandError("could not start ssh command execution: #{cmd}") unless exec_success
               block.call(ch, :exec, nil)
