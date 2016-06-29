@@ -92,6 +92,7 @@ module Airlift
               # a sync version (or is always sync)?
             end
             block.call(writer_proc)
+            ch.close
           when :exitstatus
             return false if data != 0
           end
