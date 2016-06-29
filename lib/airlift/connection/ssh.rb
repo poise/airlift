@@ -82,7 +82,7 @@ module Airlift
         # echo back all the data which would be a waste of bandwidth.
         # As with the sh in {#execute_command}, this could cause issues with paths
         # that contain literally $s or 's. Don't do that, seriously.
-        ssh_sudo_exec!('sh', '-s', "cat > '#{path}'") do |ch, action, data|
+        ssh_sudo_exec!('sh', '-c', "cat > '#{path}'") do |ch, action, data|
           case action
           when :exec
             writer_proc = Proc.new do |writer_data|
