@@ -253,7 +253,7 @@ module Airlift
           end
         end
 
-        ssh_exec(*cmd, input, pty) do |ch, action, data|
+        ssh_exec(*cmd, pty: pty) do |ch, action, data|
           # If we are waiting to see __SUDO_PASSWORD__, don't pass through
           # any data.
           if action == :stdout && sudo_password_buf
