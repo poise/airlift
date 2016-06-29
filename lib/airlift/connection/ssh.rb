@@ -240,6 +240,10 @@ module Airlift
         # Set up the sudo stuffs.
         sudo_password_buf = nil
         if sudo
+          # Convert array to a string and other cleanups.
+          cmd = cmd.first if cmd.length == 1
+          cmd = Shellwords.join(cmd) if cmd.is_a?(Array)
+          # Add the sudo command
           cmd = if sudo.is_a?(String)
             # Set up a buffer.
             sudo_password_buf = ''
