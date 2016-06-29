@@ -63,19 +63,8 @@ module Airlift
         uri_config[:user] = parsed_uri.user if parsed_uri.user && !parsed_uri.user.empty?
         uri_config[:password] = parsed_uri.password if parsed_uri.password && !parsed_uri.password.empty?
         URI.decode_www_form(parsed_uri.query || '').each do |key, value|
-          # Convert a few common values to their Ruby counterpart.
-          uri_config[key.to_sym] = case value
-          when 'true'
-            true
-          when 'false'
-            false
-          when 'nil'
-            nil
-          when /^\d+$/
-            value.to_i
-          else
-            value
-          end
+          # Safe YAML parsing to support simple Ruby types.
+          uri_config[key.to_sym] = YAML.safe_load(value)
         end
         # Explicit keywork arguments take priority over the URI.
         config = uri_config.merge(config)
