@@ -38,6 +38,8 @@ module Airlift
       # @see Airlift::Command#initialize
       # @return [Airlift::Command]
       def command(*cmd, **options)
+        # Copy over the sudo setting from the connection if needed.
+        options[:sudo] = config[:sudo] if config.include?(:sudo) && !options.include?(:sudo)
         Airlift::Command.new(self, *cmd, **options)
       end
 
