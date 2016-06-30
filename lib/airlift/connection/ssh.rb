@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Copyright 2016, Noah Kantrowitz
 #
@@ -201,7 +202,7 @@ module Airlift
             end
 
             # Run the requested command.
-            logger.debug("[Airlift::Connection::SSH] Running command: #{cmd}")
+            logger.debug("[Airlift::Connection::SSH] Running command: #{cmd}") if logger
             ch.exec cmd do |_, exec_success|
               raise Errors::CommandError("could not start ssh command execution: #{cmd}") unless exec_success
               block.call(ch, :exec, nil)
