@@ -44,7 +44,7 @@ module Airlift
 
       # (see Base#upload_file)
       def upload_file(path, &block)
-        handle = sftp_connection.open!(path)
+        handle = sftp_connection.open!(path, 'w')
         offset = 0
         writer_proc = Proc.new do |data|
           sftp_connection.write!(handle, offset, data)
